@@ -1,24 +1,68 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
-import {
-  FlatList,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native-gesture-handler';
+GLOBAL = require('./global');
 
-const HomeScreen = ({ navigation, route }) => {
+import axios from 'axios';
+import { useIsFocused } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+
+// define the render function for the component
+const HomeScreen = ({ navigation }) => {
+  // set the variable isFocus which is use to create an
+  // update on goBack() from other screen
+  const isFocused = useIsFocused();
+
+  // set offset state used for api call
   const [offset, setOffset] = useState(() => 0);
-  const [amount, setAmount] = useState(() => 10);
+
+  // set amount state also for api call
+  const [amount, setAmount] = useState(() => 20);
+
+  // set elevatorList state for the list of inactive elevator
   const [elevatorList, setElevatorList] = useState(() => []);
+
+  // set loading state for button load more
   const [loadingState, setLoading] = useState(() => {
     return { text: 'Load More', loading: false };
   });
 
+  // helper function for changing the global "state" object
+  const setGlobal = (id, state) => {
+    GLOBAL.tempElevator.id = id;
+    GLOBAL.tempElevator.isActive = state;
+  };
+
+  // append once on first load
   useEffect(() => {
     getElevators();
   }, []);
 
+  // append every change on isFocused
+  useEffect(() => {
+    GLOBAL.tempElevator.isActive ? rmTempFromList() : null;
+  }, [isFocused]);
+
+  // used for removing the elevator not active from the list
+  // and reset global "state"
+  const rmTempFromList = () => {
+    const list = elevatorList.filter(
+      (elev) => elev.id != GLOBAL.tempElevator.id
+    );
+
+    setElevatorList(list);
+    setGlobal(undefined, false);
+  };
+
+  // function for navigating to the detail screen
+  const goToDetails = (elevator) => {
+    setGlobal(elevator.id, false);
+
+    navigation.navigate('ElevatorDetails', {
+      elevator: elevator,
+    });
+  };
+
+  // api call for retrieving the list of elevator not active
   const getElevators = async () => {
     setLoading((previousState) => {
       return { text: 'Loading', loading: true };
@@ -41,21 +85,24 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   return (
+    // scroll-able container
     <ScrollView>
+      {/* if elevator list is not empty avoid calculation */}
       {elevatorList.length > 0
         ? elevatorList.map((elev) => (
-            <TouchableOpacity
-              key={elev.id}
-              onPress={() => navigation.navigate('ElevatorDetails', elev)}
-            >
+            <TouchableOpacity key={elev.id} onPress={() => goToDetails(elev)}>
               <Text style={styles.elevatorTextBox}>Elevator #{elev.id}</Text>
             </TouchableOpacity>
           ))
         : null}
+
+      {/* set the button for loading more elevator based on its state */}
       {loadingState.loading ? (
-        <Button title={loadingState.text} />
+        <Text style={styles.btnStatus}>{loadingState.text}</Text>
       ) : (
-        <Button title={loadingState.text} onPress={getElevators} />
+        <TouchableOpacity onPress={getElevators}>
+          <Text style={styles.btnStatus}>{loadingState.text}</Text>
+        </TouchableOpacity>
       )}
     </ScrollView>
   );
@@ -72,5 +119,13 @@ const styles = StyleSheet.create({
     borderTopColor: 'lightgray',
     borderTopWidth: 1,
     borderBottomWidth: 1,
+  },
+  btnStatus: {
+    fontSize: 20,
+    backgroundColor: '#aa0505',
+    color: '#fff',
+    textAlign: 'center',
+    paddingTop: 10,
+    paddingBottom: 10,
   },
 });

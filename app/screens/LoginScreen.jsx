@@ -128,34 +128,43 @@ const LoginScreen = ({ navigation }) => {
     // passing the list of elevators to the screen
     navigation.navigate('Home');
 
+    // change the state of the login button back to login state
     setBtnState((previousState) => {
       return {
         text: 'Login',
         loading: false,
       };
     });
-  };
 
-  // function used for changing the current user logged
-  const openConnection = async (parsedEmail) => {
-    navigateToHomeScreen();
+    // reset the input state (ready for log out)
+    setInput((prevInput) => {
+      return {
+        email: '',
+        isEmailValidEmail: prevInput.isEmailValidEmail,
+        isAgentEmail: false,
+      };
+    });
   };
 
   // validates the email formulation and return true || false
   const isEmailValid = () => {
     let isPassing = true;
 
+    // verify each email email validation and change the state of the
+    // isPassing variable depending on the validation
     for (const key in input.isEmailValidEmail) {
       !input.isEmailValidEmail[key].hasIt ? (isPassing = false) : null;
     }
 
+    // return the validation state ( true || false )
     return isPassing;
   };
 
   // has the name imply
-  const verifyEmailInput = (hasEmail, parsedEmail) => {
+  const verifyEmailInput = (hasEmail) => {
     // if email is valid create connection to app and set the logged user
     if (hasEmail) {
+      // set the state of the login button to the connecting state
       setBtnState((previousState) => {
         return {
           text: 'Connecting',
@@ -163,9 +172,13 @@ const LoginScreen = ({ navigation }) => {
         };
       });
 
-      openConnection(parsedEmail);
+      // call the navigation function for navigating to the home screen
+      navigateToHomeScreen();
     } else {
+      // if the are failed prompt the user with an error alert box
       Alert.alert('You shall not pass!');
+
+      // reset the button for login to the login state
       setBtnState((previousState) => {
         return {
           text: 'Login',
@@ -187,7 +200,7 @@ const LoginScreen = ({ navigation }) => {
       )
 
       // after request and passing the response
-      .then((res) => verifyEmailInput(res.data, parsedEmail))
+      .then((res) => verifyEmailInput(res.data))
 
       // if request fail -> pass error
       .catch((err) => console.log('Error in the GET request: ' + err));
@@ -197,14 +210,18 @@ const LoginScreen = ({ navigation }) => {
   const verifyEmail = () => {
     // verify the validity of the email for making the api call
     if (isEmailValid()) {
+      // set the button for login to the loading state
       setBtnState((previousState) => {
         return {
           text: 'Loading...',
           loading: true,
         };
       });
+
+      // retrieve the list of agent email
       getEmailList();
     } else {
+      // if email validation (regex) failed prompt user with error alert box
       Alert.alert('You must provide a valid email address for login in.');
     }
   };
