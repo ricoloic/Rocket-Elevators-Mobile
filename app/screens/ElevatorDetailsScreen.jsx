@@ -1,4 +1,4 @@
-GLOBAL = require('./global');
+GLOBAL = require('../global');
 
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -8,6 +8,23 @@ import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 const ElevatorDetailsScreen = ({ navigation, route }) => {
   const [elevator, setElevator] = useState(() => route.params.elevator);
   const [parsedElevator, setParsedElevator] = useState(() => []);
+  const [isGoBackBtn, setIsGoBackBtn] = useState(() => false);
+
+  const logOutBtn = (props) => (
+    <TouchableOpacity
+      onPress={() => navigation.popToTop()}
+      style={styles.logOutBtn}
+    >
+      <Text style={{ fontWeight: 'bold' }}>LogOut</Text>
+    </TouchableOpacity>
+  );
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitleAlign: 'center',
+      headerRight: logOutBtn,
+    });
+  }, []);
 
   // call a function only once after useState
   useEffect(() => {
@@ -45,7 +62,7 @@ const ElevatorDetailsScreen = ({ navigation, route }) => {
   };
 
   // create the view for rendering the information of the elevator
-  const createView = () => {
+  const createView = (isActive = false) => {
     // let new list for the keys and value in the correct component
     let keyValueList = [];
 
@@ -60,7 +77,11 @@ const ElevatorDetailsScreen = ({ navigation, route }) => {
           <Text style={styles.propTitle}>{parsedKey}: </Text>
           {/* change the text color for the value of elevator status */}
           {key == 'elevator_status' ? (
-            <Text style={styles.propValueImportant}>{elevator[key]}</Text>
+            isActive ? (
+              <Text style={styles.propValueSuccess}>Active</Text>
+            ) : (
+              <Text style={styles.propValueImportant}>{elevator[key]}</Text>
+            )
           ) : (
             <Text style={styles.propValue}>{elevator[key]}</Text>
           )}
@@ -80,16 +101,17 @@ const ElevatorDetailsScreen = ({ navigation, route }) => {
         `https://loicricorest.azurewebsites.net/api/Elevators/ChangeActive/${elevator.id}`
       )
       .then((res) => {
-        // <Popup></Popup>
-        // change global temporary elevator property isActive to true
-        GLOBAL.tempElevator.isActive = true;
-        // call function to go to the home screen
-        navigateToHomeScreen();
+        if (res.status == 200) {
+          // change global temporary elevator property isActive to true
+          GLOBAL.tempElevator.isActive = true;
+          setIsGoBackBtn(() => true);
+          setParsedElevator(() => createView(true));
+        }
       })
       .catch((err) => {
-        console.log(err);
+        // console.log(err);
         // Alert.alert(
-        //   `There was an error while changing the status for the elevator #${elevator.id}, try again later.`
+        //   `There was an error while changing the status of the elevator...`
         // );
       });
   };
@@ -98,9 +120,16 @@ const ElevatorDetailsScreen = ({ navigation, route }) => {
   return (
     <ScrollView>
       {parsedElevator}
-      <TouchableOpacity onPress={handleChangeToActive}>
-        <Text style={styles.btnStatus}>Change Status To Active</Text>
-      </TouchableOpacity>
+
+      {isGoBackBtn ? (
+        <TouchableOpacity onPress={navigateToHomeScreen}>
+          <Text style={styles.btnStatus}>Go Back</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={handleChangeToActive}>
+          <Text style={styles.btnStatus}>Change Status To Active</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 };
@@ -108,6 +137,13 @@ const ElevatorDetailsScreen = ({ navigation, route }) => {
 export default ElevatorDetailsScreen;
 
 const styles = StyleSheet.create({
+  logOutBtn: {
+    marginRight: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1.5,
+    borderColor: '#aa0505',
+  },
   banner: {
     borderBottomColor: 'lightgray',
     borderBottomWidth: 2,
@@ -123,6 +159,12 @@ const styles = StyleSheet.create({
   },
   propValueImportant: {
     color: '#aa0505',
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  propValueSuccess: {
+    color: 'green',
     textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',

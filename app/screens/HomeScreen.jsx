@@ -1,9 +1,9 @@
-GLOBAL = require('./global');
+GLOBAL = require('../global');
 
 import axios from 'axios';
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 
 // define the render function for the component
@@ -31,6 +31,25 @@ const HomeScreen = ({ navigation }) => {
     GLOBAL.tempElevator.id = id;
     GLOBAL.tempElevator.isActive = state;
   };
+
+  const logOutBtn = (props) => (
+    <View style={styles.logOutBtn}>
+      <Text
+        style={{ fontWeight: 'bold' }}
+        onPress={() => navigation.popToTop()}
+      >
+        LogOut
+      </Text>
+    </View>
+  );
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitleAlign: 'center',
+      headerLeft: (props) => <></>,
+      headerRight: logOutBtn,
+    });
+  }, []);
 
   // append once on first load
   useEffect(() => {
@@ -111,6 +130,13 @@ const HomeScreen = ({ navigation }) => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
+  logOutBtn: {
+    marginRight: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1.5,
+    borderColor: '#aa0505',
+  },
   elevatorTextBox: {
     textAlign: 'center',
     fontSize: 35,

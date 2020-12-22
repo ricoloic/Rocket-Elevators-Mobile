@@ -111,16 +111,14 @@ const LoginScreen = ({ navigation }) => {
 
   // change the input to the value passed
   const changeInputState = (_email) => {
-    setInput((previousEmail) => {
-      return {
-        // set current email
-        email: _email,
+    setInput((previousEmail) => ({
+      // set current email
+      email: _email,
 
-        // validates email
-        isEmailValidEmail: emailValidation(previousEmail, _email),
-        isAgentEmail: previousEmail.isAgentEmail,
-      };
-    });
+      // validates email
+      isEmailValidEmail: emailValidation(previousEmail, _email),
+      isAgentEmail: previousEmail.isAgentEmail,
+    }));
   };
 
   // has te name imply
@@ -129,21 +127,17 @@ const LoginScreen = ({ navigation }) => {
     navigation.navigate('Home');
 
     // change the state of the login button back to login state
-    setBtnState((previousState) => {
-      return {
-        text: 'Login',
-        loading: false,
-      };
-    });
+    setBtnState((previousState) => ({
+      text: 'Login',
+      loading: false,
+    }));
 
     // reset the input state (ready for log out)
-    setInput((prevInput) => {
-      return {
-        email: '',
-        isEmailValidEmail: prevInput.isEmailValidEmail,
-        isAgentEmail: false,
-      };
-    });
+    setInput((prevInput) => ({
+      email: '',
+      isEmailValidEmail: prevInput.isEmailValidEmail,
+      isAgentEmail: false,
+    }));
   };
 
   // validates the email formulation and return true || false
@@ -165,12 +159,10 @@ const LoginScreen = ({ navigation }) => {
     // if email is valid create connection to app and set the logged user
     if (hasEmail) {
       // set the state of the login button to the connecting state
-      setBtnState((previousState) => {
-        return {
-          text: 'Connecting',
-          loading: true,
-        };
-      });
+      setBtnState((previousState) => ({
+        text: 'Connecting',
+        loading: true,
+      }));
 
       // call the navigation function for navigating to the home screen
       navigateToHomeScreen();
@@ -179,12 +171,10 @@ const LoginScreen = ({ navigation }) => {
       Alert.alert('You shall not pass!');
 
       // reset the button for login to the login state
-      setBtnState((previousState) => {
-        return {
-          text: 'Login',
-          loading: false,
-        };
-      });
+      setBtnState((previousState) => ({
+        text: 'Login',
+        loading: false,
+      }));
     }
   };
 
@@ -203,7 +193,9 @@ const LoginScreen = ({ navigation }) => {
       .then((res) => verifyEmailInput(res.data))
 
       // if request fail -> pass error
-      .catch((err) => console.log('Error in the GET request: ' + err));
+      .catch(
+        (err) => /* console.log('Error in the GET request: ' + err) */ null
+      );
   };
 
   // verifying the email based on api call
@@ -211,12 +203,10 @@ const LoginScreen = ({ navigation }) => {
     // verify the validity of the email for making the api call
     if (isEmailValid()) {
       // set the button for login to the loading state
-      setBtnState((previousState) => {
-        return {
-          text: 'Loading...',
-          loading: true,
-        };
-      });
+      setBtnState((previousState) => ({
+        text: 'Loading...',
+        loading: true,
+      }));
 
       // retrieve the list of agent email
       getEmailList();
