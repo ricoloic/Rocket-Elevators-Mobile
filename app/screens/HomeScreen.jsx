@@ -16,7 +16,7 @@ const HomeScreen = ({ navigation }) => {
   const [offset, setOffset] = useState(() => 0);
 
   // set amount state also for api call
-  const [amount, setAmount] = useState(() => 20);
+  const [amount, setAmount] = useState(() => 40);
 
   // set elevatorList state for the list of inactive elevator
   const [elevatorList, setElevatorList] = useState(() => []);

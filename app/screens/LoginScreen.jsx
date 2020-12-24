@@ -201,7 +201,10 @@ const LoginScreen = ({ navigation }) => {
   // verifying the email based on api call
   const verifyEmail = () => {
     // verify the validity of the email for making the api call
-    if (isEmailValid()) {
+
+    if (input.email == '') {
+      Alert.alert('You must provide an email address to login.');
+    } else if (isEmailValid()) {
       // set the button for login to the loading state
       setBtnState((previousState) => ({
         text: 'Loading...',
